@@ -12,8 +12,6 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.JavaCameraView;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Point;
@@ -21,14 +19,11 @@ import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
-import org.opencv.objdetect.Objdetect;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 
 import static org.opencv.core.Core.addWeighted;
@@ -39,7 +34,6 @@ import static org.opencv.core.Core.split;
 import static org.opencv.imgproc.Imgproc.COLOR_BGRA2GRAY;
 import static org.opencv.imgproc.Imgproc.THRESH_BINARY_INV;
 import static org.opencv.imgproc.Imgproc.cvtColor;
-import static org.opencv.imgproc.Imgproc.rectangle;
 import static org.opencv.imgproc.Imgproc.resize;
 import static org.opencv.imgproc.Imgproc.threshold;
 
@@ -48,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private static final Scalar FACE_RECT_COLOR = new Scalar(0, 255, 0, 255);
 
     private JavaCameraView javaCameraView;
-    private Mat mask;
+    private Mat mask, testMat;
     private CascadeClassifier cascadeClassifier;
     private int mWidth;
     private int mHeight;
@@ -57,12 +51,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     // Used to load the 'native-lib' library on application startup.
     static {
         System.loadLibrary("native-lib");
-
-        if (OpenCVLoader.initDebug()) {
-            Log.d(TAG, "OpenCV loaded");
-        } else {
-            Log.d(TAG, "OpenCV NOT loaded!!!");
-        }
     }
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -70,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         public void onManagerConnected(int status) {
             switch (status) {
                 case LoaderCallbackInterface.SUCCESS: {
-                    Log.i(TAG, "OpenCV loaded successfully");
+//                    Log.i(TAG, "OpenCV loaded successfully");
                     javaCameraView.enableView();
                     InputStream is = getResources().openRawResource(R.raw.haarcascade_frontalface_alt2);
                     File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
@@ -107,24 +95,22 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        javaCameraView = new JavaCameraView(this, CameraBridgeViewBase.CAMERA_ID_FRONT);
         javaCameraView = (JavaCameraView) findViewById(R.id.cameraView);
         javaCameraView.setVisibility(View.VISIBLE);
         javaCameraView.setCvCameraViewListener(this);
 
         try {
-            File file = new File(Environment.getExternalStorageDirectory(), "5.jpg");
-
-//            File file = new File("/res/raw/m1.jpg");
+            File file = new File(Environment.getExternalStorageDirectory(), "five.jpg");
 
             mask = Imgcodecs.imread(file.getPath(), -1);
-
-            Log.d(TAG, "File find");
 
         } catch (Exception e) {
             e.printStackTrace();
             Log.d(TAG, "File NOT find");
         }
+
+        long llong= 11l;
+        testMat = new Mat(llong);
     }
 
     @Override
@@ -192,22 +178,19 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     private Mat putMask(Mat src, Point center, Size face_size) {
 
+        Log.e(TAG, "src at the START of putMask: " + src.toString());
         //mask : masque chargé depuis l'image
         Mat mask_resized = new Mat(); //masque resizé
         Mat src_roi = new Mat(); //ROI du visage croppé depuis la preview
         Mat roi_gray = new Mat();
 
-
         resize(mask, mask_resized, face_size);
 
         // ROI selection
         Rect roi = new Rect((int) (center.x - face_size.width / 2), (int) (center.y - face_size.height / 2), (int) face_size.width, (int) face_size.height);
-        //Rect roi = new Rect(10, 10, (int) face_size.width, (int) face_size.height);
-
 
         src.submat(roi).copyTo(src_roi);
 
-//        src_roi = new Mat(src, roi);
         Log.d(TAG, "MASK SRC1 :" + src_roi.size());
 
         // to make the white region transparent
@@ -245,14 +228,11 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         addWeighted(roi_gray, 1, roi_rgb, 1, 0, roi_rgb);
 
-        roi_rgb.copyTo(new Mat(src, roi));
+//        roi_rgb.copyTo(new Mat(src, roi));
+        src = new Mat(src, roi);
+        roi_rgb.copyTo(src);
 
+        Log.i(TAG, "src at the END of putMask: " + src.toString() + "_______________________");
         return src;
     }
-
-    /**
-     * A native method that is implemented by the 'native-lib' native library,
-     * which is packaged with this application.
-     */
-//    public native void stringFromJNI(long addrRgba);
 }

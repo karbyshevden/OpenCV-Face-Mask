@@ -4,8 +4,8 @@
 
 using namespace cv;
 
-void detect(Mat& frame);
-Mat mask;// = imread("/storage/emulated/0/data/5.jpg");
+//void detect(Mat& frame);
+//Mat mask;// = imread("/storage/emulated/0/data/5.jpg");
 Mat putMask(Mat src,Point center,Size face_size);
 
 extern "C" JNIEXPORT void
@@ -14,42 +14,47 @@ JNICALL
 Java_com_karbyshev_my4_MainActivity_stringFromJNI(
         JNIEnv *env,
         jclass ,
-        jlong addrRgba/* this */) {
+        Mat src,
+        Point center,
+        Size face_size/* this */) {
 
-    Mat& frame = *(Mat*)addrRgba;
+//    Mat& frame = *(Mat*)addrRgba;
 
-    mask = imread("/storage/emulated/0/data/5.jpg");
+//    mask = imread("/storage/emulated/0/5.jpg");
 
-    detect(frame);
+//    putMask(src, center, face_size);
+
+//    detect(frame);
 }
 
-void detect(Mat& frame) {
-
-    String face_cascade_name = "/storage/emulated/0/data/haarcascade_frontalface_alt.xml";
-    CascadeClassifier face_cascade;
-
-    if( !face_cascade.load( face_cascade_name ) ){ printf("--(!)Error loading face cascade\n"); return ; };
-
-    std::vector<Rect> faces;
-//    Mat frame_gray;
+//void detect(Mat& frame) {
 //
-//    cvtColor( frame, frame_gray, CV_BGR2GRAY );
-//    equalizeHist( frame_gray, frame_gray );
-
-    //-- Detect faces
-    face_cascade.detectMultiScale( frame, faces, 1.1, 2, 0|CASCADE_SCALE_IMAGE, Size(30, 30) );
-
-    for( size_t i = 0; i < faces.size(); i++ )
-    {
-        Point center( faces[i].x + faces[i].width*0.5, faces[i].y + faces[i].height*0.5 );
-//        ellipse( frame, center, Size( faces[i].width*0.5, faces[i].height*0.5), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );
-
-        frame = putMask(frame, center, Size( faces[i].width, faces[i].height));
-//        Mat faceROI = frame_gray( faces[i] );
-    }
-}
+//    String face_cascade_name = "/storage/emulated/0/data/haarcascade_frontalface_alt.xml";
+//    CascadeClassifier face_cascade;
+//
+//    if( !face_cascade.load( face_cascade_name ) ){ printf("--(!)Error loading face cascade\n"); return ; };
+//
+//    std::vector<Rect> faces;
+////    Mat frame_gray;
+////
+////    cvtColor( frame, frame_gray, CV_BGR2GRAY );
+////    equalizeHist( frame_gray, frame_gray );
+//
+//    //-- Detect faces
+//    face_cascade.detectMultiScale( frame, faces, 1.1, 2, 0|CASCADE_SCALE_IMAGE, Size(30, 30) );
+//
+//    for( size_t i = 0; i < faces.size(); i++ )
+//    {
+//        Point center( faces[i].x + faces[i].width*0.5, faces[i].y + faces[i].height*0.5 );
+////        ellipse( frame, center, Size( faces[i].width*0.5, faces[i].height*0.5), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );
+//
+//        frame = putMask(frame, center, Size( faces[i].width, faces[i].height));
+////        Mat faceROI = frame_gray( faces[i] );
+//    }
+//}
 
 Mat putMask(Mat src,Point center,Size face_size) {
+    Mat mask = imread("/storage/emulated/0/5.jpg");
     Mat mask1, src1;
     resize(mask, mask1, face_size);
 
